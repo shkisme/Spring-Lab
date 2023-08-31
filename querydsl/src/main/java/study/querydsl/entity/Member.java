@@ -1,6 +1,7 @@
 package study.querydsl.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -13,6 +14,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter
+@Entity
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // 기본 생성자 막고 싶으나 JPA 스펙 상 PROTECTED로 열어주기
 @ToString(of = {"id", "username", "age"}) // 연관관계 없는 필드만
