@@ -1,10 +1,13 @@
 package study.querydsl.repository;
 
+import static io.micrometer.common.util.StringUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
 import static study.querydsl.entity.QMember.member;
 import static study.querydsl.entity.QTeam.team;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -86,6 +89,52 @@ public class MemberJpaRepository {
         .from(member)
         .leftJoin(member.team, team)
         .where(builder)
+        .fetch();
+  }
+
+  public List<MemberTeamDto> search(MemberSearchCondition condition) {
+    return queryFactory
+        .select(new QMemberTeamDto(
+            member.id,
+            member.username,
+            member.age,
+            team.id,
+            team.name
+        ))
+        .from(member)
+        .leftJoin(member.team, team)
+        .where(usernameEq(condition.getUsername()),
+            teamNameEq(condition.getTeamName()),
+            ageGoe(condition.getAgeGoe()),
+            ageLoe(condition.getAgeLoe()))
+        .fetch();
+  }
+
+  private Predicate usernameEq(String username) {
+    return isEmpty(username) ? null : member.username.eq(username);
+  }
+
+  private Predicate teamNameEq(String teamName) {
+    return isEmpty(teamName) ? null : team.name.eq(teamName);
+  }
+
+  private BooleanExpression ageGoe(Integer ageGoe) {
+    return ageGoe != null ? member.age.goe(ageGoe) : null;
+  }
+
+  private BooleanExpression ageLoe(Integer ageLoe) {
+    return ageLoe != null ? member.age.loe(ageLoe) : null;
+  }
+
+  // 조건 재사용 가능
+  public List<Member> findMember(MemberSearchCondition condition) {
+    return queryFactory
+        .selectFrom(member)
+        .leftJoin(member.team, team)
+        .where(usernameEq(condition.getUsername()),
+            teamNameEq(condition.getTeamName()),
+            ageGoe(condition.getAgeGoe()),
+            ageLoe(condition.getAgeLoe()))
         .fetch();
   }
 }
