@@ -588,7 +588,7 @@ public class QuerydslBasicTest {
   @DisplayName("프로퍼티 접근 - setter")
   public void 프로퍼티_접근_setter() throws Exception {
     List<MemberDto> result = queryFactory
-        .select(Projections.bean(MemberDto.class,
+        .select(Projections.bean(MemberDto.class, // setter를 통해서 값 설정
             member.username, member.age))
         .from(member)
         .fetch();
@@ -598,7 +598,17 @@ public class QuerydslBasicTest {
   @DisplayName("필드 직접 접근")
   public void 필드_직접_접근() throws Exception {
     List<MemberDto> result = queryFactory
-        .select(Projections.fields(MemberDto.class,
+        .select(Projections.fields(MemberDto.class, // 필드에 바로 적용
+            member.username, member.age))
+        .from(member)
+        .fetch();
+  }
+
+  @Test
+  @DisplayName("생성자로")
+  public void 생성자로() throws Exception {
+    List<MemberDto> result = queryFactory
+        .select(Projections.constructor(MemberDto.class, // 필드에 바로 적용
             member.username, member.age))
         .from(member)
         .fetch();
@@ -713,7 +723,13 @@ public class QuerydslBasicTest {
         .update(member)
         .set(member.username, "비회원")
         .where(member.age.lt(28))
-        .execute();
+        .execute(); // 벌크연산은 영속성 컨텍스트를 무시하고 쿼리를 날린다.
+
+    // 이 상태에서 조회하면, 영속성 컨텍스트와 DB에서 가져온 값의 상태가 불일치.
+    // JPA는 영속성 컨텍스트에 값이 존재하면 DB에서 가져온 값을 버린다.
+
+    em.flush();
+    em.clear(); // 그렇기 때문에 벌크 연산을 수행한 뒤에는 영속성 컨텍스트를 초기화 하는 것이 좋음.
   }
 
   @Test
