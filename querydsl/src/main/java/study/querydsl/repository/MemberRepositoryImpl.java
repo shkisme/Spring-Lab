@@ -7,6 +7,7 @@ import static study.querydsl.entity.QTeam.team;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 import study.querydsl.dto.MemberSearchCondition;
 import study.querydsl.dto.MemberTeamDto;
@@ -16,8 +17,8 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
 
-  public MemberRepositoryImpl(JPAQueryFactory queryFactory) {
-    this.queryFactory = queryFactory;
+  public MemberRepositoryImpl(EntityManager em) {
+    this.queryFactory = new JPAQueryFactory(em);
   }
 
   @Override
